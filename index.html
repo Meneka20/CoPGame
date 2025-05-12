@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoP Cultivator Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Light blue background */
+            color: #1e3a8a; /* Dark blue text */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #172554; /* Even darker blue for question */
+        }
+        .answer-btn {
+            background-color: #3b82f6; /* Medium blue */
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: block;
+            width: 100%;
+            text-align: left;
+        }
+        .answer-btn:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+        }
+        .answer-btn:active {
+            transform: scale(0.98);
+        }
+        .feedback {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+        .feedback.correct {
+            background-color: #dcfce7; /* Light green */
+            color: #166534; /* Dark green */
+            border: 1px solid #4ade80;
+        }
+        .feedback.incorrect {
+            background-color: #fee2e2; /* Light red */
+            color: #991b1b; /* Dark red */
+            border: 1px solid #f87171;
+        }
+        .explanation {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-align: left;
+            color: #4b5563; /* Gray text */
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e7ff; /* Light blue-gray */
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 1.5rem;
+            width: 0%;
+            background-color: #60a5fa; /* Lighter blue for progress */
+            border-radius: 0.5rem;
+            transition: width 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        .garden-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e0f2fe; /* Very light sky blue */
+            border-radius: 0.5rem;
+            min-height: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+            justify-content: center;
+            border: 2px dashed #7dd3fc; /* Sky blue dashed border */
+        }
+        .garden-item {
+            font-size: 2rem; /* Larger emoji */
+            transition: transform 0.5s ease;
+        }
+        .garden-item:hover {
+            transform: scale(1.2);
+        }
+        .start-screen, .end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .game-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e40af; /* Darker blue for title */
+            margin-bottom: 1rem;
+        }
+        .story-intro {
+            font-size: 1rem;
+            color: #374151; /* Medium gray */
+            margin-bottom: 1.5rem;
+            max-width: 90%;
+        }
+        .action-button {
+            background-color: #16a34a; /* Green */
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #15803d; /* Darker green */
+        }
+        .hidden {
+            display: none !important;
+        }
+        .achievement-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #059669; /* Emerald green */
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div id="start-screen">
+            <h1 class="game-title">CoP Cultivator Challenge</h1>
+            <img src="https://placehold.co/150x150/a5f3fc/0c4a6e?text=CoP+Logo" alt="CoP Game Logo" class="mb-4 rounded-lg shadow-md">
+            <p class="story-intro">
+                Welcome, Dr. CoP Builder! You've been tasked with a vital mission: to cultivate a thriving Community of Practice (CoP) for faculty development at your institution. This journey will test your knowledge on the barriers and facilitators identified in the research.
+            </p>
+            <p class="story-intro">
+                Answer 10 questions, ranging from foundational concepts to complex sustainability strategies. Each correct answer helps your "CoP Garden" flourish. Let's see if you can grow a vibrant community!
+            </p>
+            <button id="start-btn" class="action-button">Start the Challenge!</button>
+        </div>
+
+        <div id="game-content" class="hidden">
+            <div id="progress-info" class="text-lg font-semibold mb-2">Question <span id="current-q-number">1</span> of <span id="total-questions">10</span></div>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar">0%</div>
+            </div>
+
+            <div id="question-area">
+                <p id="question-text" class="question-text"></p>
+                <div id="answer-options" class="grid grid-cols-1 gap-2"></div>
+            </div>
+
+            <div id="feedback-area" class="feedback hidden">
+                <p id="feedback-text"></p>
+                <p id="explanation-text" class="explanation"></p>
+            </div>
+            
+            <button id="next-btn" class="action-button mt-6 hidden">Next Question</button>
+
+            <div class="garden-container" id="garden-container">
+                <h3 class="w-full text-lg font-semibold text-sky-700 mb-2">Your CoP Garden</h3>
+                </div>
+            <p id="achievement-text" class="achievement-text hidden"></p>
+        </div>
+
+        <div id="end-screen" class="hidden">
+            <h1 class="game-title">Challenge Complete!</h1>
+            <img src="https://placehold.co/150x150/a5f3fc/0c4a6e?text=Well+Done!" alt="Well Done Icon" class="mb-4 rounded-lg shadow-md">
+            <p class="story-intro">Congratulations, Dr. CoP Builder! You've navigated the challenges of cultivating a Community of Practice.</p>
+            <p class="text-xl font-bold mb-2">Your Score: <span id="final-score">0</span> / 10</p>
+            <p id="final-message" class="story-intro mb-4"></p>
+            <div class="garden-container mb-6" id="final-garden-container">
+                 <h3 class="w-full text-lg font-semibold text-sky-700 mb-2">Your Final CoP Garden:</h3>
+            </div>
+            <button id="restart-btn" class="action-button">Play Again?</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Level 1: The Seed of an Idea (Easy - Formation)
+            {
+                question: "What is a \"Community of Practice\" (CoP) primarily defined as?",
+                options: [
+                    "A formal, time-restricted training course.",
+                    "A group of people who share a concern or passion for a topic and deepen their knowledge by interacting on an ongoing basis.",
+                    "A mandatory faculty meeting.",
+                    "An online library of resources."
+                ],
+                answer: 1,
+                explanation: "Correct! The paper (page 2 & 3) defines CoPs as groups of 'people who share a concern, a set of problems, or passion for a topic, and who deepen their knowledge and expertise in an area by interacting on an ongoing basis'. They go beyond traditional, time-restricted courses.",
+                wrongExplanation: "Not quite. The paper (page 2 & 3) defines CoPs as groups of 'people who share a concern, a set of problems, or passion for a topic, and who deepen their knowledge and expertise in an area by interacting on an ongoing basis'. They are more about ongoing interaction and shared learning than formal courses or static resources.",
+                gardenItem: "🌱", // Seedling
+                achievement: "You've planted the first seed of your CoP!"
+            },
+            {
+                question: "Which of these is NOT one of the three crucial inter-related components for cultivating a CoP, according to Wenger?",
+                options: [
+                    "Joint Enterprise",
+                    "Mutual Engagement",
+                    "Individual Assessment",
+                    "Shared Repertoire"
+                ],
+                answer: 2,
+                explanation: "Excellent! 'Individual Assessment' is not one of the three. The paper (page 3) states the three crucial components are: Joint Enterprise (negotiated understanding of common purpose), Mutual Engagement (regular interaction and learning from each other), and Shared Repertoire (shared experiences, stories, goals).",
+                wrongExplanation: "That's not it. The paper (page 3) identifies Joint Enterprise, Mutual Engagement, and Shared Repertoire as the three crucial components for cultivating a CoP, as described by Wenger. 'Individual Assessment' is not listed as one of these core components.",
+                gardenItem: "💧", // Water droplet
+                achievement: "Your CoP is getting the essential nourishment it needs!"
+            },
+            // Level 2: Laying the Foundation (Medium - Implementation)
+            {
+                question: "According to the review, what is a major *facilitator* for the formation and implementation of a CoP in medical education?",
+                options: [
+                    "Strict adherence to a fixed curriculum.",
+                    "Availability of sufficient resources (space, funding) and institutional support.",
+                    "Focusing only on individual achievements.",
+                    "Minimal interaction between members to save time."
+                ],
+                answer: 1,
+                explanation: "Spot on! The paper (page 6, 'Inner setting') highlights that 'the most reported factor was related to the availability and sufficiency of resources, including space (physical or online) and funding.' Institutional culture valuing the CoP is also key.",
+                wrongExplanation: "Consider this: The paper (page 6, 'Inner setting') emphasizes that a major facilitator is 'the availability and sufficiency of resources, including space (physical or online) and funding,' along with a supportive institutional culture. Fixed curricula or minimal interaction are generally not conducive to CoP growth.",
+                gardenItem: "☀️", // Sun
+                achievement: "Your CoP is basking in supportive sunlight!"
+            },
+            {
+                question: "What was identified as a common *barrier* to attracting and engaging members in a CoP?",
+                options: [
+                    "Too many social events.",
+                    "Time demands and general lack of interest or commitment.",
+                    "Overly enthusiastic leadership.",
+                    "Too much funding."
+                ],
+                answer: 1,
+                explanation: "Correct! The paper (page 7, 'Implementation process and strategies') notes that 'Barriers to attracting and engaging members...were mainly the time demands and general lack of interest and commitment to participate.'",
+                wrongExplanation: "Think about common challenges. The paper (page 7, 'Implementation process and strategies') identifies 'time demands and general lack of interest and commitment to participate' as key barriers to member attraction and engagement.",
+                gardenItem: "🛠️", // Tool (representing overcoming barriers)
+                achievement: "You're equipped to tackle engagement challenges!"
+            },
+             // Level 3: Nurturing Growth (Medium - Implementation & Early Sustainability)
+            {
+                question: "For successful CoP formation, the paper suggests that \"implementation moderators\" play what important role?",
+                options: [
+                    "Enforcing strict rules and attendance.",
+                    "Providing subject expertise, welcoming new members, and facilitating CoP activities.",
+                    "Only managing the CoP's budget.",
+                    "Reporting member inactivity to superiors."
+                ],
+                answer: 1,
+                explanation: "Precisely! As per the paper (page 7, 'Individual roles and characteristics'), implementation moderators are key for 'providing subject expertise, welcome and connect new members, and help facilitate CoP activities.'",
+                wrongExplanation: "Let's clarify their role. The paper (page 7, 'Individual roles and characteristics') states that implementation moderators are important for 'providing subject expertise, welcoming new members, and facilitating CoP activities,' rather than just enforcement or budget management.",
+                gardenItem: "🤝", // Handshake (collaboration)
+                achievement: "Strong facilitation is helping your CoP connect!"
+            },
+            {
+                question: "To foster member engagement, what strategy is recommended by the paper?",
+                options: [
+                    "Creating a highly competitive environment.",
+                    "Fostering social connections and a safe, welcoming environment.",
+                    "Limiting the number of new members.",
+                    "Focusing discussions only on problems, not solutions."
+                ],
+                answer: 1,
+                explanation: "Absolutely! The paper (page 7) suggests facilitators for engagement include 'fostering and promoting social connections and greater sense of community, creating a safe and welcoming environment and keeping the door open to new members and ideas.'",
+                wrongExplanation: "Engagement thrives in positive environments. The paper (page 7) recommends 'fostering and promoting social connections and greater sense of community, creating a safe and welcoming environment' to boost engagement, not competition or limiting access.",
+                gardenItem: "🌳", // Small Tree
+                achievement: "Your CoP is growing strong roots of community!"
+            },
+            // Level 4: Maturing the Practice (Hard - Sustainability & Nuance)
+            {
+                question: "The paper discusses \"learning-as-acquisition\" and \"learning-as-participation.\" What is a potential issue if a CoP in medical education focuses too much on individual \"learning-as-acquisition\"?",
+                options: [
+                    "Members learn too many facts.",
+                    "It might neglect the relational aspects and social practice central to a CoP.",
+                    "The CoP becomes too informal.",
+                    "It leads to faster promotions for members."
+                ],
+                answer: 1,
+                explanation: "That's a deep insight! The paper (page 9) discusses the tendency to focus on individual learning-as-acquisition 'to the detriment of the relational aspects of learning-as-participation that is central to the formation, operation and sustainability of a CoP.'",
+                wrongExplanation: "This is a nuanced point. The paper (page 9) warns that overemphasizing 'learning-as-acquisition' (individual knowledge gain) can neglect 'learning-as-participation,' which involves the crucial relational and social aspects that are core to a CoP's functioning and sustainability.",
+                gardenItem: "🦋", // Butterfly
+                achievement: "Your CoP is transforming with deeper understanding!"
+            },
+            {
+                question: "What is a significant challenge for the *sustainability* of CoPs, particularly in the medical education context?",
+                options: [
+                    "Members becoming too expert.",
+                    "Lack of long-term evaluation data on participation and competing demands on members' time.",
+                    "Too much institutional interference.",
+                    "The CoP evolving too quickly."
+                ],
+                answer: 1,
+                explanation: "Indeed! The paper highlights (page 8, Discussion & page 9) 'a lack of long-term evaluation data on participation' and that 'competing demands and lack of time' were main reasons for declining engagement, impacting sustainability. The unique context of clinical educators also plays a role.",
+                wrongExplanation: "Sustainability is tricky. The paper (page 8 & 9) points to 'a lack of long-term evaluation data on participation' and 'competing demands and lack of time' as significant challenges to sustaining CoPs, especially given the demanding context of medical education.",
+                gardenItem: "⏳", // Hourglass (longevity)
+                achievement: "You're thinking about the long-term health of your CoP!"
+            },
+            {
+                question: "When comparing physical, virtual, and hybrid CoPs, what is a key advantage often associated with virtual CoPs?",
+                options: [
+                    "Stronger spontaneous personal bonds.",
+                    "Overcoming geographical limitations and time constraints.",
+                    "Less need for technical support.",
+                    "Easier to ensure everyone has the same level of technological skill."
+                ],
+                answer: 1,
+                explanation: "You've got it! The paper (page 11) states that virtual CoPs 'can overcome many physical limitations by leveraging technological infrastructure and digital platforms to facilitate asynchronous and synchronous interactions,' helping with distance and time constraints.",
+                wrongExplanation: "Consider the digital age. The paper (page 11) notes that a key advantage of virtual CoPs is their ability to 'overcome many physical limitations' like distance and time constraints, by using technology for interaction. While they have their own challenges (like tech skills), this is a primary benefit.",
+                gardenItem: "🌐", // Globe (connectivity)
+                achievement: "Your CoP is reaching across boundaries!"
+            },
+            // Level 5: The Evergreen CoP (Hardest - Future Directions)
+            {
+                question: "The paper suggests that future CoP cultivation efforts in medical education should pay more attention to:",
+                options: [
+                    "Increasing the number of mandatory workshops.",
+                    "The specific sociocultural practices and structural context of medical professionals as clinical educators.",
+                    "Standardizing all CoPs to follow one rigid model.",
+                    "Reducing the role of leadership to encourage grassroots efforts."
+                ],
+                answer: 1,
+                explanation: "Excellent conclusion! A key theme in the discussion (page 9) is the 'absence of a detailed understanding and/or acknowledgement of the effects of the sociocultural practices and structural context of the active medical professional as a clinical educator within a clinical setting.' Taking this context seriously is crucial.",
+                wrongExplanation: "Looking ahead is important. The paper (page 9) strongly suggests that future efforts need a deeper understanding of 'the sociocultural practices and structural context of the active medical professional as clinical educator.' This context-specific approach is more emphasized than simply more workshops or rigid models.",
+                gardenItem: "🌟", // Star (excellence)
+                achievement: "Your CoP is set for a bright and impactful future!"
+            }
+        ];
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameContent = document.getElementById('game-content');
+        const endScreen = document.getElementById('end-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const questionTextEl = document.getElementById('question-text');
+        const answerOptionsEl = document.getElementById('answer-options');
+        const feedbackAreaEl = document.getElementById('feedback-area');
+        const feedbackTextEl = document.getElementById('feedback-text');
+        const explanationTextEl = document.getElementById('explanation-text');
+        
+        const progressBarEl = document.getElementById('progress-bar');
+        const currentQNumberEl = document.getElementById('current-q-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
+
+        const gardenContainerEl = document.getElementById('garden-container');
+        const finalGardenContainerEl = document.getElementById('final-garden-container');
+        const achievementTextEl = document.getElementById('achievement-text');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalMessageEl = document.getElementById('final-message');
+
+        // Game State
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let collectedGardenItems = [];
+
+        // Initialize Game
+        function initGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            collectedGardenItems = [];
+            totalQuestionsEl.textContent = questions.length;
+            updateGardenDisplay(); // Clear garden
+            startScreen.classList.remove('hidden');
+            gameContent.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            feedbackAreaEl.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            achievementTextEl.classList.add('hidden');
+        }
+
+        // Start Game
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            gameContent.classList.remove('hidden');
+            loadQuestion();
+        });
+        
+        // Load Question
+        function loadQuestion() {
+            // Reset from previous question
+            feedbackAreaEl.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            achievementTextEl.classList.add('hidden');
+            answerOptionsEl.innerHTML = ''; // Clear previous options
+
+            if (currentQuestionIndex < questions.length) {
+                const currentQuestion = questions[currentQuestionIndex];
+                questionTextEl.textContent = currentQuestion.question;
+                currentQNumberEl.textContent = currentQuestionIndex + 1;
+
+                currentQuestion.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.classList.add('answer-btn');
+                    button.addEventListener('click', () => selectAnswer(index, button));
+                    answerOptionsEl.appendChild(button);
+                });
+                updateProgressBar();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        // Select Answer
+        function selectAnswer(selectedIndex, buttonEl) {
+            const currentQuestion = questions[currentQuestionIndex];
+            const isCorrect = selectedIndex === currentQuestion.answer;
+
+            // Disable all buttons after an answer is selected
+            Array.from(answerOptionsEl.children).forEach(btn => {
+                btn.disabled = true;
+                // Visually indicate the selected and correct/incorrect answers
+                if (btn === buttonEl) { // The button that was clicked
+                    btn.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500');
+                    btn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                } else if (currentQuestion.options.indexOf(btn.textContent) === currentQuestion.answer && !isCorrect) {
+                     // If the answer was wrong, also highlight the correct one
+                    btn.classList.add('bg-green-300', 'text-green-800', 'border-2', 'border-green-500');
+                     btn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                }
+            });
+            
+            feedbackAreaEl.classList.remove('hidden');
+            if (isCorrect) {
+                score++;
+                feedbackTextEl.textContent = "Correct!";
+                explanationTextEl.textContent = currentQuestion.explanation;
+                feedbackAreaEl.className = 'feedback correct'; // Reset and apply correct class
+                collectedGardenItems.push(currentQuestion.gardenItem);
+                achievementTextEl.textContent = currentQuestion.achievement;
+                achievementTextEl.classList.remove('hidden');
+            } else {
+                feedbackTextEl.textContent = "Incorrect!";
+                explanationTextEl.textContent = currentQuestion.wrongExplanation;
+                feedbackAreaEl.className = 'feedback incorrect'; // Reset and apply incorrect class
+                achievementTextEl.classList.add('hidden');
+            }
+            updateGardenDisplay();
+            nextBtn.classList.remove('hidden');
+        }
+
+        // Next Question
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            loadQuestion();
+        });
+        
+        // Update Progress Bar
+        function updateProgressBar() {
+            const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
+            progressBarEl.style.width = `${progressPercentage}%`;
+            progressBarEl.textContent = `${Math.round(progressPercentage)}%`;
+        }
+        
+        // Update Garden Display
+        function updateGardenDisplay() {
+            gardenContainerEl.innerHTML = '<h3 class="w-full text-lg font-semibold text-sky-700 mb-2">Your CoP Garden</h3>'; // Reset with title
+            collectedGardenItems.forEach(item => {
+                const span = document.createElement('span');
+                span.classList.add('garden-item');
+                span.textContent = item;
+                gardenContainerEl.appendChild(span);
+            });
+        }
+
+        // Show End Screen
+        function showEndScreen() {
+            gameContent.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            finalScoreEl.textContent = score;
+            
+            // Update final progress bar to 100%
+            progressBarEl.style.width = `100%`;
+            progressBarEl.textContent = `100%`;
+
+            let message = "";
+            if (score === questions.length) {
+                message = "Amazing! You're a true CoP Cultivation Master! Your garden is flourishing beautifully.";
+            } else if (score >= questions.length * 0.7) {
+                message = "Great job! You have a strong understanding of CoP cultivation. Your garden is vibrant!";
+            } else if (score >= questions.length * 0.4) {
+                message = "Good effort! You're learning the essentials. Keep nurturing your CoP knowledge, and your garden will grow.";
+            } else {
+                message = "You've started your journey! Review the explanations and try again to make your CoP garden thrive.";
+            }
+            finalMessageEl.textContent = message;
+
+            // Display final garden
+            finalGardenContainerEl.innerHTML = '<h3 class="w-full text-lg font-semibold text-sky-700 mb-2">Your Final CoP Garden:</h3>';
+            collectedGardenItems.forEach(item => {
+                const span = document.createElement('span');
+                span.classList.add('garden-item');
+                span.textContent = item;
+                finalGardenContainerEl.appendChild(span);
+            });
+        }
+
+        // Restart Game
+        restartBtn.addEventListener('click', initGame);
+
+        // Initial call
+        initGame();
+    </script>
+</body>
+</html>
